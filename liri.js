@@ -10,6 +10,10 @@ var axios = require("axios");
 // Require moment
 var moment = require('moment');
 
+// Require Node Spotify
+var Spotify = require('node-spotify-api');
+var spotify = new Spotify(keys.spotify);
+    
 // Determine which command the user has selected
 var selectedCommand = process.argv[2];
 
@@ -45,6 +49,33 @@ switch (selectedCommand) {
     )
     break;
   case "spotify-this-song":
+    var userSong = "The Sign";
+    if (userArgument) {
+      userSong = userArgument;
+    }
+    spotify.search({ type: 'track', query: userSong }, function (err, data) {
+      if (err) {
+        console.log('Error occurred: ' + err);
+      }
+
+      if (userSong === "The Sign") {
+        console.log(`
+        Artist: ${data.tracks.items[8].album.artists[0].name}
+        Song: ${data.tracks.items[8].name}
+        Spotify Preview Link: ${data.tracks.items[8].external_urls.spotify}
+        Album: ${data.tracks.items[8].album.name}
+        `);
+      } else {
+        for (var i = 0; i <= data.tracks.items.length - 1; i++) {
+          console.log(`
+          Artist: ${data.tracks.items[i].album.artists[0].name}
+          Song: ${data.tracks.items[i].name}
+          Spotify Preview Link: ${data.tracks.items[i].external_urls.spotify}
+          Album: ${data.tracks.items[i].album.name}
+          `);
+        };
+      }
+    });
     break;
   case "movie-this":
     break;
