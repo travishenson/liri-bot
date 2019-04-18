@@ -8,12 +8,15 @@ var keys = require("./keys.js");
 var axios = require("axios");
 
 // Require moment
-var moment = require('moment');
+var moment = require("moment");
 
 // Require Node Spotify
-var Spotify = require('node-spotify-api');
+var Spotify = require("node-spotify-api");
 var spotify = new Spotify(keys.spotify);
-    
+
+// Require file-system
+var fs = require("file-system");
+
 // Determine which command the user has selected
 var selectedCommand = process.argv[2];
 
@@ -22,62 +25,133 @@ var userArgument = process.argv.splice(3).join(" ");
 
 // Title Case Function
 function titleCase(string) {
-  return string.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
+	return string.replace(/\w\S*/g, function(txt) {
+		return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+	});
 }
 
-// Switch statement to run proper function, per user input
-switch (selectedCommand) {
-  case "concert-this":
-    var artist = userArgument.replace(/\s/g, '');
-    var queryURL = `https://rest.bandsintown.com/artists/${artist}/events?app_id=codingbootcamp`;
-    axios.get(queryURL).then(
-      function (response) {
-        for (var i = 0; i < response.data.length; i++) {
-          // If region is applicable, format it for readability and correctness
-          var region = '';
-          if (response.data[i].venue.region) {
-            region = response.data[i].venue.region + ", ";
-          };
-          console.log(`
-            Artist: ${titleCase(userArgument)}
-            Venue: ${response.data[i].venue.name}
-            Location: ${response.data[i].venue.city}, ${region}${response.data[i].venue.country}
-            Event Date: ${moment(response.data[i].datetime).format("MM/DD/YYYY")}
-          `)
-        }
-      }
-    )
-    break;
-  case "spotify-this-song":
-    var userSong = "The Sign";
-    if (userArgument) {
-      userSong = userArgument;
-    }
-    spotify.search({ type: 'track', query: userSong }, function (err, data) {
-      if (err) {
-        console.log('Error occurred: ' + err);
-      }
+// Concert Function
+function concertThis(artist) {
+	var artist = userArgument.replace(/\s/g, "");
+	var queryURL = `https://rest.bandsintown.com/artists/${artist}/events?app_id=codingbootcamp`;
+	axios.get(queryURL).then(function(response) {
+		for (var i = 0; i < response.data.length; i++) {
+			// If region is applicable, format it for readability and correctness
+			var region = "";
+			if (response.data[i].venue.region) {
+				region = response.data[i].venue.region + ", ";
+			}
+			console.log(`
+          Artist: ${titleCase(userArgument)}
+          Venue: ${response.data[i].venue.name}
+          Location: ${response.data[i].venue.city}, ${region}${
+				response.data[i].venue.country
+			}
+          Event Date: ${moment(response.data[i].datetime).format("MM/DD/YYYY")}
+        `);
+		}
+	});
+}
 
-      if (userSong === "The Sign") {
-        console.log(`
+// Spotify Function
+function spotifyThis(userSong) {
+	if (userArgument) {
+		userSong = userArgument;
+	}
+
+	if (!userSong) {
+		userSong = "The Sign";
+	}
+	spotify.search({ type: "track", query: userSong }, function(err, data) {
+		if (err) {
+			console.log("Error occurred: " + err);
+		}
+
+		if (userSong === "The Sign") {
+			console.log(`
         Artist: ${data.tracks.items[8].album.artists[0].name}
         Song: ${data.tracks.items[8].name}
         Spotify Preview Link: ${data.tracks.items[8].external_urls.spotify}
         Album: ${data.tracks.items[8].album.name}
         `);
-      } else {
-        for (var i = 0; i <= data.tracks.items.length - 1; i++) {
-          console.log(`
+		} else {
+			for (var i = 0; i <= data.tracks.items.length - 1; i++) {
+				console.log(`
           Artist: ${data.tracks.items[i].album.artists[0].name}
           Song: ${data.tracks.items[i].name}
           Spotify Preview Link: ${data.tracks.items[i].external_urls.spotify}
           Album: ${data.tracks.items[i].album.name}
           `);
-        };
-      }
-    });
-    break;
-  case "movie-this":
-    break;
-  case "do-what-it-says":
-};
+			}
+		}
+	});
+}
+
+// Movie This Function
+function movieThis(movieTitle) {
+	if (userArgument) {
+		movieTitle = userArgument;
+	}
+
+	if (userArgument) {
+		movieTitle = userArgument;
+	}
+
+	if (!movieTitle) {
+		movieTitle = "Mr Nobody";
+	}
+	var movieQuery = movieTitle.replace(/\s+/g, "+");
+	var movieURL = `http://www.omdbapi.com/?t=${movieQuery}&y=&plot=short&apikey=trilogy`;
+
+	axios.get(movieURL).then(function(response) {
+		var movieData = response.data;
+		console.log(`
+        Title: ${movieData.Title}
+        Release Year: ${movieData.Year}
+        IMDB Rating: ${movieData.Ratings[0].Value}
+        Rotten Tomatoes Rating: ${movieData.Ratings[1].Value}
+        Produced in ${movieData.Country.replace(/,(?=[^,]*$)/, ", and")}
+        Language: ${movieData.Language}
+        Plot: ${movieData.Plot}
+        Cast: ${movieData.Actors}
+        `);
+	});
+}
+
+// Do what it says Function
+function doWhat() {
+	fs.readFile("random.txt", "utf8", function(error, data) {
+		if (error) {
+			return console.log(error);
+		}
+
+		var dataArr = data.split(",");
+		var txtCommand = dataArr[0];
+		var txtArg = dataArr[1];
+
+		switch (txtCommand) {
+			case "concert-this":
+				concertThis(txtArg);
+				break;
+			case "spotify-this-song":
+				spotifyThis(txtArg);
+				break;
+			case "movie-this":
+				movieThis(txtArg);
+		}
+	});
+}
+// Switch statement to run proper function, per user input
+switch (selectedCommand) {
+	case "concert-this":
+		concertThis();
+		break;
+	case "spotify-this-song":
+		spotifyThis();
+		break;
+	case "movie-this":
+		movieThis();
+		break;
+	case "do-what-it-says":
+		doWhat();
+}
