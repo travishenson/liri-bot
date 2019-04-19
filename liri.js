@@ -51,11 +51,25 @@ function titleCase(string) {
 	});
 }
 
+// ** Function to write to the log **
+function writeLog (logInput) {
+  fs.appendFileSync("log.txt", logInput, function (err) {
+
+    // If the code experiences any errors it will log the error to the console.
+    if (err) {
+      return console.log(err);
+    }
+
+  });
+}
+
 // ** Base Functions for the LIRI Program **
 // Concert-This Function
 function concertThis(artist) {
 	var artist = userArgument.replace(/\s/g, "");
-	var queryURL = `https://rest.bandsintown.com/artists/${artist}/events?app_id=codingbootcamp`;
+  var queryURL = `https://rest.bandsintown.com/artists/${artist}/events?app_id=codingbootcamp`;
+  writeLog(`Command: node liri concert-this ${artist}
+  `);
 	axios.get(queryURL).then(function(response) {
 		for (var i = 0; i < response.data.length; i++) {
 			// If region is applicable, format it for readability and correctness
@@ -70,6 +84,7 @@ function concertThis(artist) {
 				  response.data[i].venue.country}
           Event Date: ${moment(response.data[i].datetime).format("MM/DD/YYYY")}
         `;
+      writeLog(`${concertOutput}`);
       console.log(concertOutput);
 		}
 	});
@@ -98,8 +113,13 @@ function spotifyThis(userSong) {
         Spotify Preview Link: ${data.tracks.items[8].external_urls.spotify}
         Album: ${data.tracks.items[8].album.name}
         `
-        console.log(defaultSpotifyOutput);
-		} else {
+      writeLog(`********** New Command Log **********
+      Command: node liri spotify-this-song ${defaultSpotifyOutput}
+        `);
+      console.log(defaultSpotifyOutput);
+    } else {
+      writeLog(`********** New Command Log **********
+      Command: node liri spotify-this-song ${userSong}`);
 			for (var i = 0; i <= data.tracks.items.length - 1; i++) {
 				var spotifyOutput = `
           Artist: ${data.tracks.items[i].album.artists[0].name}
@@ -107,7 +127,8 @@ function spotifyThis(userSong) {
           Spotify Preview Link: ${data.tracks.items[i].external_urls.spotify}
           Album: ${data.tracks.items[i].album.name}
           `
-          console.log(spotifyOutput);
+          writeLog(`${spotifyOutput}`);
+        console.log(spotifyOutput);
 			}
 		}
 	});
@@ -115,9 +136,6 @@ function spotifyThis(userSong) {
 
 // Movie-This Function
 function movieThis(movieTitle) {
-	if (userArgument) {
-		movieTitle = userArgument;
-	}
 
 	if (userArgument) {
 		movieTitle = userArgument;
@@ -142,6 +160,10 @@ function movieThis(movieTitle) {
         Plot: ${movieData.Plot}
         Cast: ${movieData.Actors}
         `;
+    writeLog(`********** New Command Log **********
+    Command: node liri movie-this ${userArgument}
+    ${movieOutput}
+    `);
     console.log(movieOutput);
 	});
 }
