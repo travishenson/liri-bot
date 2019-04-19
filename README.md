@@ -14,6 +14,7 @@ This will return a list of concert dates, sourced from the BandsInTown API, base
 
 Example:
 
+![GIF: concert-this command](gifs/concert-this-tbk.gif)
 
 ### Spotify-This-Song
 The format for this command:
@@ -23,8 +24,11 @@ This will return a list of songs based on the user argument. This command utiliz
 
 Example: 
 
+![GIF: spotify-this-song command](gifs/spotify-this-song-otr.gif)
 
 If no user argument is given, the command defaults to `spotify-this-song` for the song, "The Sign" by Ace of Base, as seen below:
+
+![GIF: spotify-this-song command default](gifs/spotify-this-song-default.gif)
 
 ### Movie-This
 The format for this command:
@@ -34,7 +38,11 @@ Utilizing the OMDB API, this command returns information about a movie. The retu
 
 Example: 
 
+![GIF: movie-this command default](gifs/movie-this-tdk.gif)
+
 If no user argument is given, the command defaults to `movie-this` for the movie, _Mr. Nobody_, as seen below:
+
+![GIF: movie-this command default](gifs/movie-this-default.gif)
 
 
 ### Do-What-It-Says
@@ -44,3 +52,9 @@ The format for this command:
 This command returns a random result of one of the commands above, based on the contents of the `random.txt` file. By default, it will run the `spotify-this-song` command for the song `"I Want It That Way"`
 
 Example:
+
+![GIF: do-what-it-says command](gifs/do-what-it-says.gif)
+
+
+### Commands are Logged to log.txt
+Every time the user inputs a command, the input and output are logged to `log.txt`
